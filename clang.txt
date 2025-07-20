@@ -1,0 +1,2 @@
+[binaries]
+cpp = '/opt/homebrew/opt/llvm/bin/clang++'

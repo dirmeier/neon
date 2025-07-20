@@ -1,0 +1,7 @@
+BasedOnStyle:  Google
+BreakBeforeBraces: Mozilla
+ColumnLimit: 100
+IndentWidth: 4
+PointerAlignment: Left
+DerivePointerAlignment: false
+TabWidth: 4

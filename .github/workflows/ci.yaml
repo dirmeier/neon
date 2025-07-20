@@ -1,0 +1,85 @@
+name: ci
+
+on:
+  push:
+    branches: [ main ]
+  pull_request:
+    branches: [ main ]
+
+jobs:
+  precommit:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - uses: actions/setup-python@v3
+      - name: Setup
+        run: |
+          sudo apt-get install cppcheck
+          python -m pip install --upgrade pip
+          pip install cpplint
+      - uses: pre-commit/action@v3.0.0
+
+  build:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [3.11]
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v3
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install meson ninja
+      - name: Build
+        run: |
+          make build
+
+  test:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [3.11]
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v3
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install googletest
+        run: |
+          wget https://github.com/google/googletest/archive/refs/tags/v1.14.0.tar.gz
+          mkdir googletest
+          tar -zxvf v1.14.0.tar.gz -C googletest --strip-components 1
+          mkdir -p googletest/build
+          cd googletest/build
+          cmake .. && make && sudo make install
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install meson ninja
+      - name: Run tests
+        run: |
+          make test
+
+  lints:
+    runs-on: ubuntu-latest
+    strategy:
+      matrix:
+        python-version: [3.11]
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v3
+        with:
+          python-version: ${{ matrix.python-version }}
+      - name: Install dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install cpplint meson ninja
+      - name: Run lints
+        run: |
+          make lint
